@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
       listItemClone.querySelector(".movie-title").textContent = movie.Title;
       listItemClone.querySelector(".movie-info").textContent = movie.Year;
       listItemClone.querySelector(".movie-poster").src = movie.Poster;
-      listItemClone.getElementById("re-route").href = "/detail";
+      listItemClone.getElementById("re-route").href = movie.imdbID;
       listItemClone.getElementById("re-route").target = "_blank";
       listItemContainer.appendChild(listItemClone);
     });
