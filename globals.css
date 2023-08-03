@@ -122,6 +122,7 @@ body {
 svg {
   cursor: pointer;
 }
+
 svg:hover {
   color: orange;
   transform: scale(1.5);

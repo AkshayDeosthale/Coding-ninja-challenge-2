@@ -96,12 +96,71 @@ const movies = {
   Response: "True",
 };
 
+let likedMovies = JSON.parse(window.localStorage.getItem("likedMovies")) || [];
+
 document.addEventListener("DOMContentLoaded", function () {
   //hero image
   const heroImage = document.getElementById("hero-image");
   const heroName = document.getElementById("hero-name");
   const heroYear = document.getElementById("hero-year");
-  //movie list
+  const explore = document.getElementById("explore-hero");
+  const likeHero = document.getElementById("like-hero");
+
+  //page header
+  const headerLikeTemplate = document.getElementById("header-liked");
+  const HeaderLikedContainer = document.getElementById(
+    "header-liked-container"
+  );
+  function addHeaderLiked() {
+    let list = [];
+
+    movies.Search.forEach((mov) => {
+      if (likedMovies.includes(mov.imdbID)) {
+        list.push(mov);
+      }
+    });
+
+    list.forEach((movie, index) => {
+      const headerLikedList = headerLikeTemplate.content.cloneNode(true);
+
+      headerLikedList.getElementById("index-number").innerText = index + 1;
+      headerLikedList.querySelector(".movie-title").textContent = movie.Title;
+      headerLikedList.querySelector(".movie-info").textContent = movie.Year;
+      headerLikedList.querySelector(".movie-poster").src = movie.Poster;
+
+      // headerLikedList.querySelector(".dropdown-item").textContent = movie.Title;
+      // headerLikedList.querySelector(".dropdown-item").src = movie.Poster;
+
+      const likeButton = headerLikedList.getElementById("like-button");
+      likeButton?.addEventListener("click", function (event) {
+        const indexToRemove = likedMovies.indexOf(movie.imdbID);
+
+        if (indexToRemove !== -1) {
+          likedMovies.splice(indexToRemove, 1);
+        } else {
+          likedMovies.push(movie.imdbID);
+        }
+
+        window.localStorage.setItem("likedMovies", JSON.stringify(likedMovies));
+        location.reload();
+      });
+
+      //reroute button
+      let newHref = `/detail?id=${movie.imdbID}`;
+      const linkElement = headerLikedList.getElementById(
+        "header-like-list-item"
+      );
+      linkElement.addEventListener("click", function (event) {
+        event.preventDefault();
+        window.localStorage.setItem("activemovie", JSON.stringify(movie));
+        window.location.href = newHref;
+      });
+
+      HeaderLikedContainer.appendChild(headerLikedList);
+    });
+  }
+
+  //movie hero
   const listItemContainer = document.getElementById(
     "movie-list-item-container"
   );
@@ -112,17 +171,43 @@ document.addEventListener("DOMContentLoaded", function () {
     heroName.innerText = movies.Hero.Title;
     heroYear.innerText = movies.Hero.Year;
   }
+
   setHerodetails();
 
   //movie list
   function addList() {
     movies.Search.forEach((movie, index) => {
       const listItemClone = listItemTemplate.content.cloneNode(true);
+      listItemClone.getElementById("index-number").innerText = index + 1;
       listItemClone.querySelector(".movie-title").textContent = movie.Title;
       listItemClone.querySelector(".movie-info").textContent = movie.Year;
       listItemClone.querySelector(".movie-poster").src = movie.Poster;
-      listItemClone.getElementById("re-route").href = movie.imdbID;
-      listItemClone.getElementById("re-route").target = "_blank";
+
+      //like button
+      const likeButton = listItemClone.getElementById("like-button");
+      likeButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        const indexToRemove = likedMovies.indexOf(movie.imdbID);
+
+        if (indexToRemove !== -1) {
+          likedMovies.splice(indexToRemove, 1);
+        } else {
+          likedMovies.push(movie.imdbID);
+        }
+
+        window.localStorage.setItem("likedMovies", JSON.stringify(likedMovies));
+        location.reload();
+      });
+
+      //reroute button
+      let newHref = `/detail?id=${movie.imdbID}`;
+      const linkElement = listItemClone.getElementById("re-route");
+      linkElement.addEventListener("click", function (event) {
+        event.preventDefault();
+        window.localStorage.setItem("activemovie", JSON.stringify(movie));
+        window.location.href = newHref;
+      });
+
       listItemContainer.appendChild(listItemClone);
     });
   }
@@ -146,40 +231,24 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Array to store favorite movies
-  const favorites = [];
+  //click events for hero section
+  explore.addEventListener("click", function (event) {
+    event.preventDefault();
+    window.localStorage.setItem("activemovie", JSON.stringify(movies.Hero));
+    window.location.href = "/detail/";
+  });
 
-  // Function to add a movie to the favorites list
-  function addToFavorites(movieTitle) {
-    if (!favorites.includes(movieTitle)) {
-      favorites.push(movieTitle);
-      console.log(`${movieTitle} added to favorites.`);
-    }
-  }
-
-  // Function to handle the heart icon click event
-  function handleHeartClick(event) {
-    console.log("i");
-    const heartIcon = event.target;
-    const movieTitle = heartIcon.dataset.movieTitle;
-
-    addToFavorites(movieTitle);
-  }
-
-  // Get the movie items and add event listener to each heart icon
-  const movieItems = document.querySelectorAll(".movie-list-item");
-
-  movieItems.forEach((item) => {
-    const heartIcon = item.querySelector(".bi-heart");
-    const movieTitle = item.querySelector(".movie-title").textContent;
-
-    heartIcon.addEventListener("click", handleHeartClick);
-    heartIcon.setAttribute("data-movie-title", movieTitle);
+  likeHero.addEventListener("click", function (event) {
+    event.preventDefault();
+    window.localStorage.setItem(
+      "likedMovies",
+      JSON.stringify([...favourites, movie])
+    );
   });
 
   document
     .getElementById("movie-filter")
     .addEventListener("input", filterMovies);
-
+  addHeaderLiked();
   addList();
 });
